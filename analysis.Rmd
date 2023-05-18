@@ -1,0 +1,23 @@
+---
+title: "Plato's Pizza"
+author: "Remy Drain"
+date: "Last updated `r Sys.Date()`"
+output: 
+  html_notebook:
+    toc: true
+---
+
+## Process
+### Load Packages
+```{r install and load packages, echo=TRUE, results='hide', message=FALSE, warning=FALSE}
+library(tidyverse)
+library(RSQLite)
+library(forcats)
+library(ggplot2)
+```
+
+### Read in the datasets
+```{r read in data, echo=TRUE, results='hide', message=FALSE, warning=FALSE}
+
+```
+
