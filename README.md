@@ -8,4 +8,4 @@ Using data from the [Maven Analytics Pizza Challenge](https://mavenanalytics.io/
 * How many pizzas are being made during peak periods?
 * What are their best and worst selling pizzas?
 * What is the average order value?
-* How well are they using their seating capacity?
+* How well are they using their seating capacity of 15 tables and 60 seats?

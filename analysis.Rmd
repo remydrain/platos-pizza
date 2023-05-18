@@ -18,6 +18,22 @@ library(ggplot2)
 
 ### Read in the datasets
 ```{r read in data, echo=TRUE, results='hide', message=FALSE, warning=FALSE}
+dict <- read.csv(file.path(getwd(), "sales-data/data_dictionary.csv"))
+order_details <- read.csv(file.path(getwd(), "sales-data/pizza_sales/order_details.csv"))
+orders <- read.csv(file.path(getwd(), "sales-data/pizza_sales/orders.csv"))
+pizza_types <- read.csv(file.path(getwd(), "sales-data/pizza_sales/pizza_types.csv"))
+pizzas <- read.csv(file.path(getwd(), "sales-data/pizza_sales/pizzas.csv"))
+```
 
+### Create a SQLite Database
+```{r create database, echo=TRUE, results='hide', message=FALSE, warning=FALSE}
+db <- dbConnect(RSQLite::SQLite(), dbname=":memory:")
+
+dbWriteTable(db, "order_details", order_details)
+dbWriteTable(db, "orders", orders)
+dbWriteTable(db, "pizza_types", pizza_types)
+dbWriteTable(db, "pizzas", pizzas)
+
+dbListTables(db)
 ```
 

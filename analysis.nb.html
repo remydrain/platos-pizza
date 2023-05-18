@@ -1761,6 +1761,7 @@ display: none;
 Packages</a></li>
 <li><a href="#read-in-the-datasets" id="toc-read-in-the-datasets">Read
 in the datasets</a></li>
+<li><a href="#create-a-sqlite-database" id="toc-create-a-sqlite-database">Create a SQLite Database</a></li>
 </ul></li>
 </ul>
 </div>
@@ -1785,13 +1786,37 @@ library(ggplot2)</code></pre>
 <h3>Read in the datasets</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGljdCA8LSByZWFkLmNzdihmaWxlLnBhdGgoZ2V0d2QoKSwgXCJzYWxlcy1kYXRhL2RhdGFfZGljdGlvbmFyeS5jc3ZcIikpXG5vcmRlcl9kZXRhaWxzIDwtIHJlYWQuY3N2KGZpbGUucGF0aChnZXR3ZCgpLCBcInNhbGVzLWRhdGEvcGl6emFfc2FsZXMvb3JkZXJfZGV0YWlscy5jc3ZcIikpXG5vcmRlcnMgPC0gcmVhZC5jc3YoZmlsZS5wYXRoKGdldHdkKCksIFwic2FsZXMtZGF0YS9waXp6YV9zYWxlcy9vcmRlcnMuY3N2XCIpKVxucGl6emFfdHlwZXMgPC0gcmVhZC5jc3YoZmlsZS5wYXRoKGdldHdkKCksIFwic2FsZXMtZGF0YS9waXp6YV9zYWxlcy9waXp6YV90eXBlcy5jc3ZcIikpXG5waXp6YXMgPC0gcmVhZC5jc3YoZmlsZS5wYXRoKGdldHdkKCksIFwic2FsZXMtZGF0YS9waXp6YV9zYWxlcy9waXp6YXMuY3N2XCIpKVxuYGBgIn0= -->
+<pre class="r"><code>dict &lt;- read.csv(file.path(getwd(), &quot;sales-data/data_dictionary.csv&quot;))
+order_details &lt;- read.csv(file.path(getwd(), &quot;sales-data/pizza_sales/order_details.csv&quot;))
+orders &lt;- read.csv(file.path(getwd(), &quot;sales-data/pizza_sales/orders.csv&quot;))
+pizza_types &lt;- read.csv(file.path(getwd(), &quot;sales-data/pizza_sales/pizza_types.csv&quot;))
+pizzas &lt;- read.csv(file.path(getwd(), &quot;sales-data/pizza_sales/pizzas.csv&quot;))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="create-a-sqlite-database" class="section level3">
+<h3>Create a SQLite Database</h3>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGIgPC0gZGJDb25uZWN0KFJTUUxpdGU6OlNRTGl0ZSgpLCBkYm5hbWU9XCI6bWVtb3J5OlwiKVxuXG5kYldyaXRlVGFibGUoZGIsIFwib3JkZXJfZGV0YWlsc1wiLCBvcmRlcl9kZXRhaWxzKVxuZGJXcml0ZVRhYmxlKGRiLCBcIm9yZGVyc1wiLCBvcmRlcnMpXG5kYldyaXRlVGFibGUoZGIsIFwicGl6emFfdHlwZXNcIiwgcGl6emFfdHlwZXMpXG5kYldyaXRlVGFibGUoZGIsIFwicGl6emFzXCIsIHBpenphcylcblxuZGJMaXN0VGFibGVzKGRiKVxuYGBgIn0= -->
+<pre class="r"><code>db &lt;- dbConnect(RSQLite::SQLite(), dbname=&quot;:memory:&quot;)
+
+dbWriteTable(db, &quot;order_details&quot;, order_details)
+dbWriteTable(db, &quot;orders&quot;, orders)
+dbWriteTable(db, &quot;pizza_types&quot;, pizza_types)
+dbWriteTable(db, &quot;pizzas&quot;, pizzas)
+
+dbListTables(db)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 </div>
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiUGxhdG8ncyBQaXp6YSIKYXV0aG9yOiAiUmVteSBEcmFpbiIKZGF0ZTogIkxhc3QgdXBkYXRlZCBgciBTeXMuRGF0ZSgpYCIKb3V0cHV0OiAKICBodG1sX25vdGVib29rOgogICAgdG9jOiB0cnVlCi0tLQoKIyMgUHJvY2VzcwojIyMgTG9hZCBQYWNrYWdlcwpgYGB7ciBpbnN0YWxsIGFuZCBsb2FkIHBhY2thZ2VzLCBlY2hvPVRSVUUsIHJlc3VsdHM9J2hpZGUnLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQpsaWJyYXJ5KHRpZHl2ZXJzZSkKbGlicmFyeShSU1FMaXRlKQpsaWJyYXJ5KGZvcmNhdHMpCmxpYnJhcnkoZ2dwbG90MikKYGBgCgojIyMgUmVhZCBpbiB0aGUgZGF0YXNldHMKYGBge3IgcmVhZCBpbiBkYXRhLCBlY2hvPVRSVUUsIHJlc3VsdHM9J2hpZGUnLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQoKYGBgCgo=</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiUGxhdG8ncyBQaXp6YSIKYXV0aG9yOiAiUmVteSBEcmFpbiIKZGF0ZTogIkxhc3QgdXBkYXRlZCBgciBTeXMuRGF0ZSgpYCIKb3V0cHV0OiAKICBodG1sX25vdGVib29rOgogICAgdG9jOiB0cnVlCi0tLQoKIyMgUHJvY2VzcwojIyMgTG9hZCBQYWNrYWdlcwpgYGB7ciBpbnN0YWxsIGFuZCBsb2FkIHBhY2thZ2VzLCBlY2hvPVRSVUUsIHJlc3VsdHM9J2hpZGUnLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQpsaWJyYXJ5KHRpZHl2ZXJzZSkKbGlicmFyeShSU1FMaXRlKQpsaWJyYXJ5KGZvcmNhdHMpCmxpYnJhcnkoZ2dwbG90MikKYGBgCgojIyMgUmVhZCBpbiB0aGUgZGF0YXNldHMKYGBge3IgcmVhZCBpbiBkYXRhLCBlY2hvPVRSVUUsIHJlc3VsdHM9J2hpZGUnLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQpkaWN0IDwtIHJlYWQuY3N2KGZpbGUucGF0aChnZXR3ZCgpLCAic2FsZXMtZGF0YS9kYXRhX2RpY3Rpb25hcnkuY3N2IikpCm9yZGVyX2RldGFpbHMgPC0gcmVhZC5jc3YoZmlsZS5wYXRoKGdldHdkKCksICJzYWxlcy1kYXRhL3BpenphX3NhbGVzL29yZGVyX2RldGFpbHMuY3N2IikpCm9yZGVycyA8LSByZWFkLmNzdihmaWxlLnBhdGgoZ2V0d2QoKSwgInNhbGVzLWRhdGEvcGl6emFfc2FsZXMvb3JkZXJzLmNzdiIpKQpwaXp6YV90eXBlcyA8LSByZWFkLmNzdihmaWxlLnBhdGgoZ2V0d2QoKSwgInNhbGVzLWRhdGEvcGl6emFfc2FsZXMvcGl6emFfdHlwZXMuY3N2IikpCnBpenphcyA8LSByZWFkLmNzdihmaWxlLnBhdGgoZ2V0d2QoKSwgInNhbGVzLWRhdGEvcGl6emFfc2FsZXMvcGl6emFzLmNzdiIpKQpgYGAKCiMjIyBDcmVhdGUgYSBTUUxpdGUgRGF0YWJhc2UKYGBge3IgY3JlYXRlIGRhdGFiYXNlLCBlY2hvPVRSVUUsIHJlc3VsdHM9J2hpZGUnLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQpkYiA8LSBkYkNvbm5lY3QoUlNRTGl0ZTo6U1FMaXRlKCksIGRibmFtZT0iOm1lbW9yeToiKQoKZGJXcml0ZVRhYmxlKGRiLCAib3JkZXJfZGV0YWlscyIsIG9yZGVyX2RldGFpbHMpCmRiV3JpdGVUYWJsZShkYiwgIm9yZGVycyIsIG9yZGVycykKZGJXcml0ZVRhYmxlKGRiLCAicGl6emFfdHlwZXMiLCBwaXp6YV90eXBlcykKZGJXcml0ZVRhYmxlKGRiLCAicGl6emFzIiwgcGl6emFzKQoKZGJMaXN0VGFibGVzKGRiKQpgYGAKCg==</div>
 
 
 
