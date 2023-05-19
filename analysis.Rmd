@@ -5,6 +5,9 @@ date: "Last updated `r Sys.Date()`"
 output: 
   html_notebook:
     toc: true
+bibliography: sources.bib
+csl: chicago-fullnote-bibliography.csl
+suppress-bibliography: true
 ---
 
 ## Process
@@ -49,6 +52,9 @@ dbWriteTable(db, "pizzas", pizzas)
 dbListTables(db)
 ```
 
+I'll start by creating a dataframe for the orders, where I want to include the following:
+
+* New column for weekday 
 ```{sql add weekdays variable, connection=db, output.var="orders_df"}
 SELECT
   order_id,
