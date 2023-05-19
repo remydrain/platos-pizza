@@ -54,11 +54,26 @@ dbListTables(db)
 
 I'll start by creating a dataframe for the orders, where I want to include the following:
 
-* New column for weekday 
-```{sql add weekdays variable, connection=db, output.var="orders_df"}
+* New column for weekday
+* Order total
+
+```{sql create weekdays table, connection=db}
+CREATE TABLE weekdays (
+  id TEXT,
+  weekday TEXT
+);
+
+INSERT INTO weekdays (id, weekday)
+VALUES
+  ('0', 'Sunday'), ('1', 'Monday'), ('2', 'Tuesday'), ('3', 'Wednesday'), ('4', 'Thursday'), ('5', 'Friday'), ('6', 'Saturday');
+  
+SELECT * FROM weekdays
+```
+
+```{sql add weekdays variable, connection=db, output.var=orders_df}
 SELECT
   order_id,
-  strftime('%w', julianday(date)) AS weekday,
+  strftime('%w', julianday(date)) AS day_code,
   date,
   time
 FROM orders
