@@ -51,8 +51,10 @@ dbListTables(db)
 
 ```{sql add weekdays variable, connection=db, output.var="orders_df"}
 SELECT
+  order_id,
   strftime('%w', julianday(date)) AS weekday,
-  date
+  date,
+  time
 FROM orders
 ```
 *ref:* <https://www.sqlite.org/lang_datefunc.html#strftm>
