@@ -25,6 +25,18 @@ pizza_types <- read.csv(file.path(getwd(), "sales-data/pizza_sales/pizza_types.c
 pizzas <- read.csv(file.path(getwd(), "sales-data/pizza_sales/pizzas.csv"))
 ```
 
+### Explore the data
+I've got my data imported, including the data dictionary that was provided. I'll use tibbles to get an idea of what the data looks like in each of the tables.
+```{r}
+tibble(dict)
+tibble(order_details)
+tibble(orders)
+tibble(pizza_types)
+tibble(pizzas)
+```
+
+I want to aggregate some of the data and create at least one new variable showing the day of the week, so I'm going to use the `RSQLite` package to create a virtual database that I can run SQL queries through, then save them as dataframes for plotting.
+
 ### Create a SQLite Database
 ```{r create database, echo=TRUE, results='hide', message=FALSE, warning=FALSE}
 db <- dbConnect(RSQLite::SQLite(), dbname=":memory:")
@@ -37,3 +49,10 @@ dbWriteTable(db, "pizzas", pizzas)
 dbListTables(db)
 ```
 
+```{sql add weekdays variable, connection=db, output.var="orders_df"}
+SELECT
+  strftime('%w', julianday(date)) AS weekday,
+  date
+FROM orders
+```
+*ref:* <https://www.sqlite.org/lang_datefunc.html#strftm>
