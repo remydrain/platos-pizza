@@ -54,28 +54,50 @@ dbListTables(db)
 
 I'll start by creating a dataframe for the orders, where I want to include the following:
 
-* New column for weekday
+* New column for weekday[^1]
 * Order total
 
-```{sql create weekdays table, connection=db}
-CREATE TABLE weekdays (
-  id TEXT,
-  weekday TEXT
-);
-
-INSERT INTO weekdays (id, weekday)
-VALUES
-  ('0', 'Sunday'), ('1', 'Monday'), ('2', 'Tuesday'), ('3', 'Wednesday'), ('4', 'Thursday'), ('5', 'Friday'), ('6', 'Saturday');
-  
-SELECT * FROM weekdays
-```
-
-```{sql add weekdays variable, connection=db, output.var=orders_df}
+```{sql add weekdays variable, connection=db, output.var=odf}
 SELECT
-  order_id,
-  strftime('%w', julianday(date)) AS day_code,
+  orders.order_id,
+  strftime('%w', julianday(date)) AS weekday,
   date,
-  time
+  time,
+  SUM(order_details.quantity) AS total_items,
+  SUM(pizza_price) AS order_total
 FROM orders
+JOIN
+  (SELECT
+    order_details.order_id,
+    order_details.quantity,
+    pizzas.pizza_id,
+    pizzas.price*order_details.quantity AS pizza_price
+  FROM order_details
+  JOIN pizzas
+    ON pizzas.pizza_id=order_details.pizza_id) AS order_details
+  ON order_details.order_id=orders.order_id
+GROUP BY orders.order_id
 ```
-*ref:* <https://www.sqlite.org/lang_datefunc.html#strftm>
+
+Since SQLite doesn't have a data type for date and time,[^2] I'll want to convert some of the columns in our dataframe so I can use them for plotting.
+
+I also want to change the values in the weekday column to the actual days of the week, so I'll use R to replace them with their corresponding values.[^3]
+```{r convert weekday values}
+odf['weekday'][odf['weekday'] == '0'] <- 'Sunday'
+odf['weekday'][odf['weekday'] == '1'] <- 'Monday'
+odf['weekday'][odf['weekday'] == '2'] <- 'Tuesday'
+odf['weekday'][odf['weekday'] == '3'] <- 'Wednesday'
+odf['weekday'][odf['weekday'] == '4'] <- 'Thursday'
+odf['weekday'][odf['weekday'] == '5'] <- 'Friday'
+odf['weekday'][odf['weekday'] == '6'] <- 'Saturday'
+```
+
+Et, voilá! I've got my first plottable dataframe. Let's take it for a spin with `ggplot2`.
+```{r plotting orders}
+
+```
+
+
+[^1]: <https://www.sqlite.org/lang_datefunc.html#strftm>
+[^2]: <https://www.sqlite.org/datatype3.html>
+[^3]: <https://www.statology.org/replace-values-in-data-frame-r/>

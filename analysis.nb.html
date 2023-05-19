@@ -1823,41 +1823,87 @@ SQL queries through, then save them as dataframes for plotting.</p>
 <h3>Create a SQLite Database</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGIgPC0gZGJDb25uZWN0KFJTUUxpdGU6OlNRTGl0ZSgpLCBkYm5hbWU9XCI6bWVtb3J5OlwiKVxuXG5kYldyaXRlVGFibGUoZGIsIFwib3JkZXJfZGV0YWlsc1wiLCBvcmRlcl9kZXRhaWxzKVxuZGJXcml0ZVRhYmxlKGRiLCBcIm9yZGVyc1wiLCBvcmRlcnMpXG5kYldyaXRlVGFibGUoZGIsIFwicGl6emFfdHlwZXNcIiwgcGl6emFfdHlwZXMpXG5kYldyaXRlVGFibGUoZGIsIFwicGl6emFzXCIsIHBpenphcylcblxuZGJMaXN0VGFibGVzKGRiKVxuYGBgIn0= -->
+<pre class="r"><code>db &lt;- dbConnect(RSQLite::SQLite(), dbname=&quot;:memory:&quot;)
+
+dbWriteTable(db, &quot;order_details&quot;, order_details)
+dbWriteTable(db, &quot;orders&quot;, orders)
+dbWriteTable(db, &quot;pizza_types&quot;, pizza_types)
+dbWriteTable(db, &quot;pizzas&quot;, pizzas)
+
+dbListTables(db)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>I’ll start by creating a dataframe for the orders, where I want to
 include the following:</p>
 <ul>
-<li>New column for weekday</li>
+<li>New column for weekday<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></li>
 <li>Order total</li>
 </ul>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgc3FsXG5cblxuSU5TRVJUIElOVE8gd2Vla2RheXMgKGlkLCB3ZWVrZGF5KVxuVkFMVUVTXG4gICgnMCcsICdTdW5kYXknKSwgKCcxJywgJ01vbmRheScpLCAoJzInLCAnVHVlc2RheScpLCAoJzMnLCAnV2VkbmVzZGF5JyksICgnNCcsICdUaHVyc2RheScpLCAoJzUnLCAnRnJpZGF5JyksICgnNicsICdTYXR1cmRheScpO1xuICBcblNFTEVDVCAqIEZST00gd2Vla2RheXNcbmBgYCJ9 -->
-<pre class="sql"><code>
-
-INSERT INTO weekdays (id, weekday)
-VALUES
-  (&#39;0&#39;, &#39;Sunday&#39;), (&#39;1&#39;, &#39;Monday&#39;), (&#39;2&#39;, &#39;Tuesday&#39;), (&#39;3&#39;, &#39;Wednesday&#39;), (&#39;4&#39;, &#39;Thursday&#39;), (&#39;5&#39;, &#39;Friday&#39;), (&#39;6&#39;, &#39;Saturday&#39;);
-  
-SELECT * FROM weekdays</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgc3FsXG5TRUxFQ1RcbiAgb3JkZXJzLm9yZGVyX2lkLFxuICBzdHJmdGltZSgnJXcnLCBqdWxpYW5kYXkoZGF0ZSkpIEFTIHdlZWtkYXksXG4gIGRhdGUsXG4gIHRpbWUsXG4gIFNVTShvcmRlcl9kZXRhaWxzLnF1YW50aXR5KSBBUyB0b3RhbF9pdGVtcyxcbiAgU1VNKHBpenphX3ByaWNlKSBBUyBvcmRlcl90b3RhbFxuRlJPTSBvcmRlcnNcbkpPSU5cbiAgKFNFTEVDVFxuICAgIG9yZGVyX2RldGFpbHMub3JkZXJfaWQsXG4gICAgb3JkZXJfZGV0YWlscy5xdWFudGl0eSxcbiAgICBwaXp6YXMucGl6emFfaWQsXG4gICAgcGl6emFzLnByaWNlKm9yZGVyX2RldGFpbHMucXVhbnRpdHkgQVMgcGl6emFfcHJpY2VcbiAgRlJPTSBvcmRlcl9kZXRhaWxzXG4gIEpPSU4gcGl6emFzXG4gICAgT04gcGl6emFzLnBpenphX2lkPW9yZGVyX2RldGFpbHMucGl6emFfaWQpIEFTIG9yZGVyX2RldGFpbHNcbiAgT04gb3JkZXJfZGV0YWlscy5vcmRlcl9pZD1vcmRlcnMub3JkZXJfaWRcbkdST1VQIEJZIG9yZGVycy5vcmRlcl9pZFxuYGBgIn0= -->
+<pre class="sql"><code>SELECT
+  orders.order_id,
+  strftime(&#39;%w&#39;, julianday(date)) AS weekday,
+  date,
+  time,
+  SUM(order_details.quantity) AS total_items,
+  SUM(pizza_price) AS order_total
+FROM orders
+JOIN
+  (SELECT
+    order_details.order_id,
+    order_details.quantity,
+    pizzas.pizza_id,
+    pizzas.price*order_details.quantity AS pizza_price
+  FROM order_details
+  JOIN pizzas
+    ON pizzas.pizza_id=order_details.pizza_id) AS order_details
+  ON order_details.order_id=orders.order_id
+GROUP BY orders.order_id</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<p>Since SQLite doesn’t have a data type for date and time,<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> I’ll want
+to convert some of the columns in our dataframe so I can use them for
+plotting.</p>
+<p>I also want to change the values in the weekday column to the actual
+days of the week, so I’ll use R to replace them with their corresponding
+values.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3I6IG5lYXIgXCIoXCI6IHN5bnRheCBlcnJvclxuRmFpbGVkIHRvIGV4ZWN1dGUgU1FMIGNodW5rXG4ifQ== -->
-<pre><code>Error: near &quot;(&quot;: syntax error
-Failed to execute SQL chunk</code></pre>
-<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxub2RmWyd3ZWVrZGF5J11bb2RmWyd3ZWVrZGF5J10gPT0gJzAnXSA8LSAnU3VuZGF5J1xub2RmWyd3ZWVrZGF5J11bb2RmWyd3ZWVrZGF5J10gPT0gJzEnXSA8LSAnTW9uZGF5J1xub2RmWyd3ZWVrZGF5J11bb2RmWyd3ZWVrZGF5J10gPT0gJzInXSA8LSAnVHVlc2RheSdcbm9kZlsnd2Vla2RheSddW29kZlsnd2Vla2RheSddID09ICczJ10gPC0gJ1dlZG5lc2RheSdcbm9kZlsnd2Vla2RheSddW29kZlsnd2Vla2RheSddID09ICc0J10gPC0gJ1RodXJzZGF5J1xub2RmWyd3ZWVrZGF5J11bb2RmWyd3ZWVrZGF5J10gPT0gJzUnXSA8LSAnRnJpZGF5J1xub2RmWyd3ZWVrZGF5J11bb2RmWyd3ZWVrZGF5J10gPT0gJzYnXSA8LSAnU2F0dXJkYXknXG5gYGAifQ== -->
+<pre class="r"><code>odf[&#39;weekday&#39;][odf[&#39;weekday&#39;] == &#39;0&#39;] &lt;- &#39;Sunday&#39;
+odf[&#39;weekday&#39;][odf[&#39;weekday&#39;] == &#39;1&#39;] &lt;- &#39;Monday&#39;
+odf[&#39;weekday&#39;][odf[&#39;weekday&#39;] == &#39;2&#39;] &lt;- &#39;Tuesday&#39;
+odf[&#39;weekday&#39;][odf[&#39;weekday&#39;] == &#39;3&#39;] &lt;- &#39;Wednesday&#39;
+odf[&#39;weekday&#39;][odf[&#39;weekday&#39;] == &#39;4&#39;] &lt;- &#39;Thursday&#39;
+odf[&#39;weekday&#39;][odf[&#39;weekday&#39;] == &#39;5&#39;] &lt;- &#39;Friday&#39;
+odf[&#39;weekday&#39;][odf[&#39;weekday&#39;] == &#39;6&#39;] &lt;- &#39;Saturday&#39;</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p><em>ref:</em> <a href="https://www.sqlite.org/lang_datefunc.html#strftm" class="uri">https://www.sqlite.org/lang_datefunc.html#strftm</a></p>
+<p>Et, voilá! I’ve got my first plottable dataframe. Let’s take it for a
+spin with <code>ggplot2</code>.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 </div>
 </div>
+<div class="footnotes footnotes-end-of-document">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://www.sqlite.org/lang_datefunc.html#strftm" class="uri">https://www.sqlite.org/lang_datefunc.html#strftm</a><a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p><a href="https://www.sqlite.org/datatype3.html" class="uri">https://www.sqlite.org/datatype3.html</a><a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p><a href="https://www.statology.org/replace-values-in-data-frame-r/" class="uri">https://www.statology.org/replace-values-in-data-frame-r/</a><a href="#fnref3" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiUGxhdG8ncyBQaXp6YSIKYXV0aG9yOiAiUmVteSBEcmFpbiIKZGF0ZTogIkxhc3QgdXBkYXRlZCBgciBTeXMuRGF0ZSgpYCIKb3V0cHV0OiAKICBodG1sX25vdGVib29rOgogICAgdG9jOiB0cnVlCmJpYmxpb2dyYXBoeTogc291cmNlcy5iaWIKY3NsOiBjaGljYWdvLWZ1bGxub3RlLWJpYmxpb2dyYXBoeS5jc2wKc3VwcHJlc3MtYmlibGlvZ3JhcGh5OiB0cnVlCi0tLQoKIyMgUHJvY2VzcwojIyMgTG9hZCBQYWNrYWdlcwpgYGB7ciBpbnN0YWxsIGFuZCBsb2FkIHBhY2thZ2VzLCBlY2hvPVRSVUUsIHJlc3VsdHM9J2hpZGUnLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQpsaWJyYXJ5KHRpZHl2ZXJzZSkKbGlicmFyeShSU1FMaXRlKQpsaWJyYXJ5KGZvcmNhdHMpCmxpYnJhcnkoZ2dwbG90MikKYGBgCgojIyMgUmVhZCBpbiB0aGUgZGF0YXNldHMKYGBge3IgcmVhZCBpbiBkYXRhLCBlY2hvPVRSVUUsIHJlc3VsdHM9J2hpZGUnLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQpkaWN0IDwtIHJlYWQuY3N2KGZpbGUucGF0aChnZXR3ZCgpLCAic2FsZXMtZGF0YS9kYXRhX2RpY3Rpb25hcnkuY3N2IikpCm9yZGVyX2RldGFpbHMgPC0gcmVhZC5jc3YoZmlsZS5wYXRoKGdldHdkKCksICJzYWxlcy1kYXRhL3BpenphX3NhbGVzL29yZGVyX2RldGFpbHMuY3N2IikpCm9yZGVycyA8LSByZWFkLmNzdihmaWxlLnBhdGgoZ2V0d2QoKSwgInNhbGVzLWRhdGEvcGl6emFfc2FsZXMvb3JkZXJzLmNzdiIpKQpwaXp6YV90eXBlcyA8LSByZWFkLmNzdihmaWxlLnBhdGgoZ2V0d2QoKSwgInNhbGVzLWRhdGEvcGl6emFfc2FsZXMvcGl6emFfdHlwZXMuY3N2IikpCnBpenphcyA8LSByZWFkLmNzdihmaWxlLnBhdGgoZ2V0d2QoKSwgInNhbGVzLWRhdGEvcGl6emFfc2FsZXMvcGl6emFzLmNzdiIpKQpgYGAKCiMjIyBFeHBsb3JlIHRoZSBkYXRhCkkndmUgZ290IG15IGRhdGEgaW1wb3J0ZWQsIGluY2x1ZGluZyB0aGUgZGF0YSBkaWN0aW9uYXJ5IHRoYXQgd2FzIHByb3ZpZGVkLiBJJ2xsIHVzZSB0aWJibGVzIHRvIGdldCBhbiBpZGVhIG9mIHdoYXQgdGhlIGRhdGEgbG9va3MgbGlrZSBpbiBlYWNoIG9mIHRoZSB0YWJsZXMuCmBgYHtyfQp0aWJibGUoZGljdCkKdGliYmxlKG9yZGVyX2RldGFpbHMpCnRpYmJsZShvcmRlcnMpCnRpYmJsZShwaXp6YV90eXBlcykKdGliYmxlKHBpenphcykKYGBgCgpJIHdhbnQgdG8gYWdncmVnYXRlIHNvbWUgb2YgdGhlIGRhdGEgYW5kIGNyZWF0ZSBhdCBsZWFzdCBvbmUgbmV3IHZhcmlhYmxlIHNob3dpbmcgdGhlIGRheSBvZiB0aGUgd2Vlaywgc28gSSdtIGdvaW5nIHRvIHVzZSB0aGUgYFJTUUxpdGVgIHBhY2thZ2UgdG8gY3JlYXRlIGEgdmlydHVhbCBkYXRhYmFzZSB0aGF0IEkgY2FuIHJ1biBTUUwgcXVlcmllcyB0aHJvdWdoLCB0aGVuIHNhdmUgdGhlbSBhcyBkYXRhZnJhbWVzIGZvciBwbG90dGluZy4KCiMjIyBDcmVhdGUgYSBTUUxpdGUgRGF0YWJhc2UKYGBge3IgY3JlYXRlIGRhdGFiYXNlLCBlY2hvPVRSVUUsIHJlc3VsdHM9J2hpZGUnLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQpkYiA8LSBkYkNvbm5lY3QoUlNRTGl0ZTo6U1FMaXRlKCksIGRibmFtZT0iOm1lbW9yeToiKQoKZGJXcml0ZVRhYmxlKGRiLCAib3JkZXJfZGV0YWlscyIsIG9yZGVyX2RldGFpbHMpCmRiV3JpdGVUYWJsZShkYiwgIm9yZGVycyIsIG9yZGVycykKZGJXcml0ZVRhYmxlKGRiLCAicGl6emFfdHlwZXMiLCBwaXp6YV90eXBlcykKZGJXcml0ZVRhYmxlKGRiLCAicGl6emFzIiwgcGl6emFzKQoKZGJMaXN0VGFibGVzKGRiKQpgYGAKCkknbGwgc3RhcnQgYnkgY3JlYXRpbmcgYSBkYXRhZnJhbWUgZm9yIHRoZSBvcmRlcnMsIHdoZXJlIEkgd2FudCB0byBpbmNsdWRlIHRoZSBmb2xsb3dpbmc6CgoqIE5ldyBjb2x1bW4gZm9yIHdlZWtkYXkKKiBPcmRlciB0b3RhbAoKYGBge3NxbCBjcmVhdGUgd2Vla2RheXMgdGFibGUsIGNvbm5lY3Rpb249ZGJ9CkNSRUFURSBUQUJMRSB3ZWVrZGF5cyAoCiAgaWQgVEVYVCwKICB3ZWVrZGF5IFRFWFQKKTsKCklOU0VSVCBJTlRPIHdlZWtkYXlzIChpZCwgd2Vla2RheSkKVkFMVUVTCiAgKCcwJywgJ1N1bmRheScpLCAoJzEnLCAnTW9uZGF5JyksICgnMicsICdUdWVzZGF5JyksICgnMycsICdXZWRuZXNkYXknKSwgKCc0JywgJ1RodXJzZGF5JyksICgnNScsICdGcmlkYXknKSwgKCc2JywgJ1NhdHVyZGF5Jyk7CiAgClNFTEVDVCAqIEZST00gd2Vla2RheXMKYGBgCgpgYGB7c3FsIGFkZCB3ZWVrZGF5cyB2YXJpYWJsZSwgY29ubmVjdGlvbj1kYiwgb3V0cHV0LnZhcj1vcmRlcnNfZGZ9ClNFTEVDVAogIG9yZGVyX2lkLAogIHN0cmZ0aW1lKCcldycsIGp1bGlhbmRheShkYXRlKSkgQVMgZGF5X2NvZGUsCiAgZGF0ZSwKICB0aW1lCkZST00gb3JkZXJzCmBgYAoqcmVmOiogPGh0dHBzOi8vd3d3LnNxbGl0ZS5vcmcvbGFuZ19kYXRlZnVuYy5odG1sI3N0cmZ0bT4K</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiUGxhdG8ncyBQaXp6YSIKYXV0aG9yOiAiUmVteSBEcmFpbiIKZGF0ZTogIkxhc3QgdXBkYXRlZCBgciBTeXMuRGF0ZSgpYCIKb3V0cHV0OiAKICBodG1sX25vdGVib29rOgogICAgdG9jOiB0cnVlCmJpYmxpb2dyYXBoeTogc291cmNlcy5iaWIKY3NsOiBjaGljYWdvLWZ1bGxub3RlLWJpYmxpb2dyYXBoeS5jc2wKc3VwcHJlc3MtYmlibGlvZ3JhcGh5OiB0cnVlCi0tLQoKIyMgUHJvY2VzcwojIyMgTG9hZCBQYWNrYWdlcwpgYGB7ciBpbnN0YWxsIGFuZCBsb2FkIHBhY2thZ2VzLCBlY2hvPVRSVUUsIHJlc3VsdHM9J2hpZGUnLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQpsaWJyYXJ5KHRpZHl2ZXJzZSkKbGlicmFyeShSU1FMaXRlKQpsaWJyYXJ5KGZvcmNhdHMpCmxpYnJhcnkoZ2dwbG90MikKYGBgCgojIyMgUmVhZCBpbiB0aGUgZGF0YXNldHMKYGBge3IgcmVhZCBpbiBkYXRhLCBlY2hvPVRSVUUsIHJlc3VsdHM9J2hpZGUnLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQpkaWN0IDwtIHJlYWQuY3N2KGZpbGUucGF0aChnZXR3ZCgpLCAic2FsZXMtZGF0YS9kYXRhX2RpY3Rpb25hcnkuY3N2IikpCm9yZGVyX2RldGFpbHMgPC0gcmVhZC5jc3YoZmlsZS5wYXRoKGdldHdkKCksICJzYWxlcy1kYXRhL3BpenphX3NhbGVzL29yZGVyX2RldGFpbHMuY3N2IikpCm9yZGVycyA8LSByZWFkLmNzdihmaWxlLnBhdGgoZ2V0d2QoKSwgInNhbGVzLWRhdGEvcGl6emFfc2FsZXMvb3JkZXJzLmNzdiIpKQpwaXp6YV90eXBlcyA8LSByZWFkLmNzdihmaWxlLnBhdGgoZ2V0d2QoKSwgInNhbGVzLWRhdGEvcGl6emFfc2FsZXMvcGl6emFfdHlwZXMuY3N2IikpCnBpenphcyA8LSByZWFkLmNzdihmaWxlLnBhdGgoZ2V0d2QoKSwgInNhbGVzLWRhdGEvcGl6emFfc2FsZXMvcGl6emFzLmNzdiIpKQpgYGAKCiMjIyBFeHBsb3JlIHRoZSBkYXRhCkkndmUgZ290IG15IGRhdGEgaW1wb3J0ZWQsIGluY2x1ZGluZyB0aGUgZGF0YSBkaWN0aW9uYXJ5IHRoYXQgd2FzIHByb3ZpZGVkLiBJJ2xsIHVzZSB0aWJibGVzIHRvIGdldCBhbiBpZGVhIG9mIHdoYXQgdGhlIGRhdGEgbG9va3MgbGlrZSBpbiBlYWNoIG9mIHRoZSB0YWJsZXMuCmBgYHtyfQp0aWJibGUoZGljdCkKdGliYmxlKG9yZGVyX2RldGFpbHMpCnRpYmJsZShvcmRlcnMpCnRpYmJsZShwaXp6YV90eXBlcykKdGliYmxlKHBpenphcykKYGBgCgpJIHdhbnQgdG8gYWdncmVnYXRlIHNvbWUgb2YgdGhlIGRhdGEgYW5kIGNyZWF0ZSBhdCBsZWFzdCBvbmUgbmV3IHZhcmlhYmxlIHNob3dpbmcgdGhlIGRheSBvZiB0aGUgd2Vlaywgc28gSSdtIGdvaW5nIHRvIHVzZSB0aGUgYFJTUUxpdGVgIHBhY2thZ2UgdG8gY3JlYXRlIGEgdmlydHVhbCBkYXRhYmFzZSB0aGF0IEkgY2FuIHJ1biBTUUwgcXVlcmllcyB0aHJvdWdoLCB0aGVuIHNhdmUgdGhlbSBhcyBkYXRhZnJhbWVzIGZvciBwbG90dGluZy4KCiMjIyBDcmVhdGUgYSBTUUxpdGUgRGF0YWJhc2UKYGBge3IgY3JlYXRlIGRhdGFiYXNlLCBlY2hvPVRSVUUsIHJlc3VsdHM9J2hpZGUnLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQpkYiA8LSBkYkNvbm5lY3QoUlNRTGl0ZTo6U1FMaXRlKCksIGRibmFtZT0iOm1lbW9yeToiKQoKZGJXcml0ZVRhYmxlKGRiLCAib3JkZXJfZGV0YWlscyIsIG9yZGVyX2RldGFpbHMpCmRiV3JpdGVUYWJsZShkYiwgIm9yZGVycyIsIG9yZGVycykKZGJXcml0ZVRhYmxlKGRiLCAicGl6emFfdHlwZXMiLCBwaXp6YV90eXBlcykKZGJXcml0ZVRhYmxlKGRiLCAicGl6emFzIiwgcGl6emFzKQoKZGJMaXN0VGFibGVzKGRiKQpgYGAKCkknbGwgc3RhcnQgYnkgY3JlYXRpbmcgYSBkYXRhZnJhbWUgZm9yIHRoZSBvcmRlcnMsIHdoZXJlIEkgd2FudCB0byBpbmNsdWRlIHRoZSBmb2xsb3dpbmc6CgoqIE5ldyBjb2x1bW4gZm9yIHdlZWtkYXlbXjFdCiogT3JkZXIgdG90YWwKCmBgYHtzcWwgYWRkIHdlZWtkYXlzIHZhcmlhYmxlLCBjb25uZWN0aW9uPWRiLCBvdXRwdXQudmFyPW9kZn0KU0VMRUNUCiAgb3JkZXJzLm9yZGVyX2lkLAogIHN0cmZ0aW1lKCcldycsIGp1bGlhbmRheShkYXRlKSkgQVMgd2Vla2RheSwKICBkYXRlLAogIHRpbWUsCiAgU1VNKG9yZGVyX2RldGFpbHMucXVhbnRpdHkpIEFTIHRvdGFsX2l0ZW1zLAogIFNVTShwaXp6YV9wcmljZSkgQVMgb3JkZXJfdG90YWwKRlJPTSBvcmRlcnMKSk9JTgogIChTRUxFQ1QKICAgIG9yZGVyX2RldGFpbHMub3JkZXJfaWQsCiAgICBvcmRlcl9kZXRhaWxzLnF1YW50aXR5LAogICAgcGl6emFzLnBpenphX2lkLAogICAgcGl6emFzLnByaWNlKm9yZGVyX2RldGFpbHMucXVhbnRpdHkgQVMgcGl6emFfcHJpY2UKICBGUk9NIG9yZGVyX2RldGFpbHMKICBKT0lOIHBpenphcwogICAgT04gcGl6emFzLnBpenphX2lkPW9yZGVyX2RldGFpbHMucGl6emFfaWQpIEFTIG9yZGVyX2RldGFpbHMKICBPTiBvcmRlcl9kZXRhaWxzLm9yZGVyX2lkPW9yZGVycy5vcmRlcl9pZApHUk9VUCBCWSBvcmRlcnMub3JkZXJfaWQKYGBgCgpTaW5jZSBTUUxpdGUgZG9lc24ndCBoYXZlIGEgZGF0YSB0eXBlIGZvciBkYXRlIGFuZCB0aW1lLFteMl0gSSdsbCB3YW50IHRvIGNvbnZlcnQgc29tZSBvZiB0aGUgY29sdW1ucyBpbiBvdXIgZGF0YWZyYW1lIHNvIEkgY2FuIHVzZSB0aGVtIGZvciBwbG90dGluZy4KCkkgYWxzbyB3YW50IHRvIGNoYW5nZSB0aGUgdmFsdWVzIGluIHRoZSB3ZWVrZGF5IGNvbHVtbiB0byB0aGUgYWN0dWFsIGRheXMgb2YgdGhlIHdlZWssIHNvIEknbGwgdXNlIFIgdG8gcmVwbGFjZSB0aGVtIHdpdGggdGhlaXIgY29ycmVzcG9uZGluZyB2YWx1ZXMuW14zXQpgYGB7ciBjb252ZXJ0IHdlZWtkYXkgdmFsdWVzfQpvZGZbJ3dlZWtkYXknXVtvZGZbJ3dlZWtkYXknXSA9PSAnMCddIDwtICdTdW5kYXknCm9kZlsnd2Vla2RheSddW29kZlsnd2Vla2RheSddID09ICcxJ10gPC0gJ01vbmRheScKb2RmWyd3ZWVrZGF5J11bb2RmWyd3ZWVrZGF5J10gPT0gJzInXSA8LSAnVHVlc2RheScKb2RmWyd3ZWVrZGF5J11bb2RmWyd3ZWVrZGF5J10gPT0gJzMnXSA8LSAnV2VkbmVzZGF5JwpvZGZbJ3dlZWtkYXknXVtvZGZbJ3dlZWtkYXknXSA9PSAnNCddIDwtICdUaHVyc2RheScKb2RmWyd3ZWVrZGF5J11bb2RmWyd3ZWVrZGF5J10gPT0gJzUnXSA8LSAnRnJpZGF5JwpvZGZbJ3dlZWtkYXknXVtvZGZbJ3dlZWtkYXknXSA9PSAnNiddIDwtICdTYXR1cmRheScKYGBgCgpFdCwgdm9pbMOhISBJJ3ZlIGdvdCBteSBmaXJzdCBwbG90dGFibGUgZGF0YWZyYW1lLiBMZXQncyB0YWtlIGl0IGZvciBhIHNwaW4gd2l0aCBgZ2dwbG90MmAuCmBgYHtyIHBsb3R0aW5nIG9yZGVyc30KCmBgYAoKClteMV06IDxodHRwczovL3d3dy5zcWxpdGUub3JnL2xhbmdfZGF0ZWZ1bmMuaHRtbCNzdHJmdG0+ClteMl06IDxodHRwczovL3d3dy5zcWxpdGUub3JnL2RhdGF0eXBlMy5odG1sPgpbXjNdOiA8aHR0cHM6Ly93d3cuc3RhdG9sb2d5Lm9yZy9yZXBsYWNlLXZhbHVlcy1pbi1kYXRhLWZyYW1lLXIvPg==</div>
 
 
 
