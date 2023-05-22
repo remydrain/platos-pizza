@@ -12,7 +12,7 @@
 <meta name="author" content="Remy Drain" />
 
 
-<title>Plato’s Pizza</title>
+<title>Plato’s Pizza Analysis</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -1747,159 +1747,85 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Plato’s Pizza</h1>
+<h1 class="title toc-ignore">Plato’s Pizza Analysis</h1>
 <h4 class="author">Remy Drain</h4>
-<h4 class="date">Last updated 2023-05-20</h4>
+<h4 class="date">Last updated: 2023-05-21</h4>
 
 </div>
 
 <div id="TOC">
 <ul>
+<li><a href="#introduction" id="toc-introduction">Introduction</a></li>
+<li><a href="#problems" id="toc-problems">Problems</a></li>
+<li><a href="#data" id="toc-data">Data</a></li>
 <li><a href="#process" id="toc-process">Process</a>
 <ul>
-<li><a href="#load-packages" id="toc-load-packages">Load
-Packages</a></li>
-<li><a href="#read-in-the-datasets" id="toc-read-in-the-datasets">Read
-in the datasets</a></li>
-<li><a href="#explore-the-data" id="toc-explore-the-data">Explore the
-data</a></li>
-<li><a href="#create-a-sqlite-database" id="toc-create-a-sqlite-database">Create a SQLite Database</a></li>
+<li><a href="#getting-to-know-the-data" id="toc-getting-to-know-the-data">Getting to Know the Data</a></li>
+<li><a href="#read-in-datasets" id="toc-read-in-datasets">Read in
+datasets</a></li>
 </ul></li>
 </ul>
 </div>
 
 <!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-text-begin -->
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Plato’s Pizza is a Greek-inspired pizza place in New Jersey looking
+for ways to improve operations using data they’ve collected over the
+last year. They’ve asked us to analyze the data and put together a
+report to help them find opportunities to drive more sales and work more
+efficiently.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
+</div>
+<div id="problems" class="section level2">
+<h2>Problems</h2>
+<p>Some specific questions they’ve asked:</p>
+<ul>
+<li>What days and times do we tend to be busiest?</li>
+<li>How many pizzas are we making during peak periods?</li>
+<li>What are our best and worst selling pizzas?</li>
+<li>What’s our average order value?</li>
+<li>How well are we using our seating capacity? (we have 15 tables and
+60 seats)</li>
+</ul>
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>The data has been provided in the following 5 files:</p>
+<ul>
+<li><strong>Data Dictionary:</strong> Contains a breakdown of the
+variables contained in each table, along with a brief description</li>
+<li><strong>Order Details:</strong> Contains details of the orders, and
+connects with the orders table on order_id and the pizzas table on
+pizza_id</li>
+<li><strong>Orders:</strong> Contains the id, date, and time of the
+order</li>
+<li><strong>Pizza Types:</strong> Contains the name, category, and
+ingredients of each pizza, and connects with the pizzas table on
+pizza_type_id</li>
+<li><strong>Pizzas:</strong> Contains the id, size, and price of the
+pizzas</li>
+</ul>
+</div>
 <div id="process" class="section level2">
 <h2>Process</h2>
-<div id="load-packages" class="section level3">
-<h3>Load Packages</h3>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh0aWR5dmVyc2UpXG5saWJyYXJ5KFJTUUxpdGUpXG5saWJyYXJ5KGZvcmNhdHMpXG5saWJyYXJ5KGdncGxvdDIpXG5gYGAifQ== -->
-<pre class="r"><code>library(tidyverse)
-library(RSQLite)
-library(forcats)
-library(ggplot2)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
+<div id="getting-to-know-the-data" class="section level3">
+<h3>Getting to Know the Data</h3>
+<p>I imported the datasets into BigQuery to perform some aggregation and
+analysis using SQL.</p>
 </div>
-<div id="read-in-the-datasets" class="section level3">
-<h3>Read in the datasets</h3>
+<div id="read-in-datasets" class="section level3">
+<h3>Read in datasets</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGljdCA8LSByZWFkLmNzdihmaWxlLnBhdGgoZ2V0d2QoKSwgXCJzYWxlcy1kYXRhL2RhdGFfZGljdGlvbmFyeS5jc3ZcIikpXG5vcmRlcl9kZXRhaWxzIDwtIHJlYWQuY3N2KGZpbGUucGF0aChnZXR3ZCgpLCBcInNhbGVzLWRhdGEvcGl6emFfc2FsZXMvb3JkZXJfZGV0YWlscy5jc3ZcIikpXG5vcmRlcnMgPC0gcmVhZC5jc3YoZmlsZS5wYXRoKGdldHdkKCksIFwic2FsZXMtZGF0YS9waXp6YV9zYWxlcy9vcmRlcnMuY3N2XCIpKVxucGl6emFfdHlwZXMgPC0gcmVhZC5jc3YoZmlsZS5wYXRoKGdldHdkKCksIFwic2FsZXMtZGF0YS9waXp6YV9zYWxlcy9waXp6YV90eXBlcy5jc3ZcIikpXG5waXp6YXMgPC0gcmVhZC5jc3YoZmlsZS5wYXRoKGdldHdkKCksIFwic2FsZXMtZGF0YS9waXp6YV9zYWxlcy9waXp6YXMuY3N2XCIpKVxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGljdCA8LSByZWFkLmNzdihmaWxlLnBhdGgoZ2V0d2QoKSwgXCJzYWxlcy1kYXRhL2RhdGFfZGljdGlvbmFyeS5jc3ZcIikpXG5vcmRlcl9kZXRhaWxzIDwtIHJlYWQuY3N2KGZpbGUucGF0aChnZXR3ZCgpLCBcInNhbGVzLWRhdGEvcGl6emFfc2FsZXMvb3JkZXJfZGV0YWlscy5jc3ZcIikpXG5vcmRlcnMgPC0gcmVhZC5jc3YoZmlsZS5wYXRoKGdldHdkKCksIFwic2FsZXMtZGF0YS9waXp6YV9zYWxlcy9vcmRlcnMuY3N2XCIpKVxucGl6emFfdHlwZXMgPC0gcmVhZC5jc3YoZmlsZS5wYXRoKGdldHdkKCksIFwic2FsZXMtZGF0YS9waXp6YV9zYWxlcy9waXp6YV90eXBlcy5jc3ZcIikpXG5waXp6YXMgPC0gcmVhZC5jc3YoZmlsZS5wYXRoKGdldHdkKCksIFwic2FsZXMtZGF0YS9waXp6YV9zYWxlcy9waXp6YXMuY3N2XCIpKVxub2RmIDwtIHJlYWQuY3N2KGZpbGUucGF0aChnZXR3ZCgpLCBcInNhbGVzLWRhdGEvYWdnX29yZGVycy5jc3ZcIikpXG5gYGAifQ== -->
 <pre class="r"><code>dict &lt;- read.csv(file.path(getwd(), &quot;sales-data/data_dictionary.csv&quot;))
 order_details &lt;- read.csv(file.path(getwd(), &quot;sales-data/pizza_sales/order_details.csv&quot;))
 orders &lt;- read.csv(file.path(getwd(), &quot;sales-data/pizza_sales/orders.csv&quot;))
 pizza_types &lt;- read.csv(file.path(getwd(), &quot;sales-data/pizza_sales/pizza_types.csv&quot;))
-pizzas &lt;- read.csv(file.path(getwd(), &quot;sales-data/pizza_sales/pizzas.csv&quot;))</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="explore-the-data" class="section level3">
-<h3>Explore the data</h3>
-<p>I’ve got my data imported, including the data dictionary that was
-provided. I’ll use tibbles to get an idea of what the data looks like in
-each of the tables.</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGliYmxlKGRpY3QpXG50aWJibGUob3JkZXJfZGV0YWlscylcbnRpYmJsZShvcmRlcnMpXG50aWJibGUocGl6emFfdHlwZXMpXG50aWJibGUocGl6emFzKVxuYGBgIn0= -->
-<pre class="r"><code>tibble(dict)
-tibble(order_details)
-tibble(orders)
-tibble(pizza_types)
-tibble(pizzas)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>I want to aggregate some of the data and create at least one new
-variable showing the day of the week, so I’m going to use the
-<code>RSQLite</code> package to create a virtual database that I can run
-SQL queries through, then save them as dataframes for plotting.</p>
-</div>
-<div id="create-a-sqlite-database" class="section level3">
-<h3>Create a SQLite Database</h3>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGIgPC0gZGJDb25uZWN0KFJTUUxpdGU6OlNRTGl0ZSgpLCBkYm5hbWU9XCI6bWVtb3J5OlwiKVxuXG5kYldyaXRlVGFibGUoZGIsIFwib3JkZXJfZGV0YWlsc1wiLCBvcmRlcl9kZXRhaWxzKVxuZGJXcml0ZVRhYmxlKGRiLCBcIm9yZGVyc1wiLCBvcmRlcnMpXG5kYldyaXRlVGFibGUoZGIsIFwicGl6emFfdHlwZXNcIiwgcGl6emFfdHlwZXMpXG5kYldyaXRlVGFibGUoZGIsIFwicGl6emFzXCIsIHBpenphcylcblxuZGJMaXN0VGFibGVzKGRiKVxuYGBgIn0= -->
-<pre class="r"><code>db &lt;- dbConnect(RSQLite::SQLite(), dbname=&quot;:memory:&quot;)
-
-dbWriteTable(db, &quot;order_details&quot;, order_details)
-dbWriteTable(db, &quot;orders&quot;, orders)
-dbWriteTable(db, &quot;pizza_types&quot;, pizza_types)
-dbWriteTable(db, &quot;pizzas&quot;, pizzas)
-
-dbListTables(db)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>I’ll start by creating a dataframe for the orders, where I want to
-include the following:</p>
-<ul>
-<li>New column for weekday<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></li>
-<li>Order total</li>
-</ul>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgc3FsXG5TRUxFQ1RcbiAgb3JkZXJzLm9yZGVyX2lkLFxuICBzdHJmdGltZSgnJXcnLCBqdWxpYW5kYXkoZGF0ZSkpIEFTIHdlZWtkYXksXG4gIGRhdGUsXG4gIHRpbWUsXG4gIFNVTShvcmRlcl9kZXRhaWxzLnF1YW50aXR5KSBBUyB0b3RhbF9pdGVtcyxcbiAgU1VNKHBpenphX3ByaWNlKSBBUyBvcmRlcl90b3RhbFxuRlJPTSBvcmRlcnNcbkpPSU5cbiAgKFNFTEVDVFxuICAgIG9yZGVyX2RldGFpbHMub3JkZXJfaWQsXG4gICAgb3JkZXJfZGV0YWlscy5xdWFudGl0eSxcbiAgICBwaXp6YXMucGl6emFfaWQsXG4gICAgcGl6emFzLnByaWNlKm9yZGVyX2RldGFpbHMucXVhbnRpdHkgQVMgcGl6emFfcHJpY2VcbiAgRlJPTSBvcmRlcl9kZXRhaWxzXG4gIEpPSU4gcGl6emFzXG4gICAgT04gcGl6emFzLnBpenphX2lkPW9yZGVyX2RldGFpbHMucGl6emFfaWQpIEFTIG9yZGVyX2RldGFpbHNcbiAgT04gb3JkZXJfZGV0YWlscy5vcmRlcl9pZD1vcmRlcnMub3JkZXJfaWRcbkdST1VQIEJZIG9yZGVycy5vcmRlcl9pZFxuYGBgIn0= -->
-<pre class="sql"><code>SELECT
-  orders.order_id,
-  strftime(&#39;%w&#39;, julianday(date)) AS weekday,
-  date,
-  time,
-  SUM(order_details.quantity) AS total_items,
-  SUM(pizza_price) AS order_total
-FROM orders
-JOIN
-  (SELECT
-    order_details.order_id,
-    order_details.quantity,
-    pizzas.pizza_id,
-    pizzas.price*order_details.quantity AS pizza_price
-  FROM order_details
-  JOIN pizzas
-    ON pizzas.pizza_id=order_details.pizza_id) AS order_details
-  ON order_details.order_id=orders.order_id
-GROUP BY orders.order_id</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>Since SQLite doesn’t have a data type for date and time,<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> I’ll want
-to convert some of the columns in our dataframe so I can use them for
-plotting.</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxub2RmJGRhdGUgPC0gYXMuRGF0ZShvZGYkZGF0ZSwgZm9ybWF0PVwiJVktJW0tJWRcIilcblxuc3RyKG9kZilcbmBgYCJ9 -->
-<pre class="r"><code>odf$date &lt;- as.Date(odf$date, format=&quot;%Y-%m-%d&quot;)
-
-str(odf)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiJ2RhdGEuZnJhbWUnOlx0MjEzNTAgb2JzLiBvZiAgNiB2YXJpYWJsZXM6XG4gJCBvcmRlcl9pZCAgIDogaW50ICAxIDIgMyA0IDUgNiA3IDggOSAxMCAuLi5cbiAkIHdlZWtkYXkgICAgOiBjaHIgIFwiNFwiIFwiNFwiIFwiNFwiIFwiNFwiIC4uLlxuICQgZGF0ZSAgICAgICA6IERhdGUsIGZvcm1hdDogXCIyMDE1LTAxLTAxXCIgXCIyMDE1LTAxLTAxXCIgXCIyMDE1LTAxLTAxXCIgXCIyMDE1LTAxLTAxXCIgLi4uXG4gJCB0aW1lICAgICAgIDogY2hyICBcIjExOjM4OjM2XCIgXCIxMTo1Nzo0MFwiIFwiMTI6MTI6MjhcIiBcIjEyOjE2OjMxXCIgLi4uXG4gJCB0b3RhbF9pdGVtczogaW50ICAxIDUgMiAxIDEgMiAxIDEgOSAyIC4uLlxuICQgb3JkZXJfdG90YWw6IG51bSAgMTMuMiA5MiAzNy4yIDE2LjUgMTYuNSAuLi5cbiJ9 -->
-<pre><code>&#39;data.frame&#39;:   21350 obs. of  6 variables:
- $ order_id   : int  1 2 3 4 5 6 7 8 9 10 ...
- $ weekday    : chr  &quot;4&quot; &quot;4&quot; &quot;4&quot; &quot;4&quot; ...
- $ date       : Date, format: &quot;2015-01-01&quot; &quot;2015-01-01&quot; &quot;2015-01-01&quot; &quot;2015-01-01&quot; ...
- $ time       : chr  &quot;11:38:36&quot; &quot;11:57:40&quot; &quot;12:12:28&quot; &quot;12:16:31&quot; ...
- $ total_items: int  1 5 2 1 1 2 1 1 9 2 ...
- $ order_total: num  13.2 92 37.2 16.5 16.5 ...</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>I also want to change the values in the weekday column to the actual
-days of the week, so I’ll use R to replace them with their corresponding
-values.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxub2RmWyd3ZWVrZGF5J11bb2RmWyd3ZWVrZGF5J10gPT0gJzAnXSA8LSAnU3VuZGF5J1xub2RmWyd3ZWVrZGF5J11bb2RmWyd3ZWVrZGF5J10gPT0gJzEnXSA8LSAnTW9uZGF5J1xub2RmWyd3ZWVrZGF5J11bb2RmWyd3ZWVrZGF5J10gPT0gJzInXSA8LSAnVHVlc2RheSdcbm9kZlsnd2Vla2RheSddW29kZlsnd2Vla2RheSddID09ICczJ10gPC0gJ1dlZG5lc2RheSdcbm9kZlsnd2Vla2RheSddW29kZlsnd2Vla2RheSddID09ICc0J10gPC0gJ1RodXJzZGF5J1xub2RmWyd3ZWVrZGF5J11bb2RmWyd3ZWVrZGF5J10gPT0gJzUnXSA8LSAnRnJpZGF5J1xub2RmWyd3ZWVrZGF5J11bb2RmWyd3ZWVrZGF5J10gPT0gJzYnXSA8LSAnU2F0dXJkYXknXG5gYGAifQ== -->
-<pre class="r"><code>odf[&#39;weekday&#39;][odf[&#39;weekday&#39;] == &#39;0&#39;] &lt;- &#39;Sunday&#39;
-odf[&#39;weekday&#39;][odf[&#39;weekday&#39;] == &#39;1&#39;] &lt;- &#39;Monday&#39;
-odf[&#39;weekday&#39;][odf[&#39;weekday&#39;] == &#39;2&#39;] &lt;- &#39;Tuesday&#39;
-odf[&#39;weekday&#39;][odf[&#39;weekday&#39;] == &#39;3&#39;] &lt;- &#39;Wednesday&#39;
-odf[&#39;weekday&#39;][odf[&#39;weekday&#39;] == &#39;4&#39;] &lt;- &#39;Thursday&#39;
-odf[&#39;weekday&#39;][odf[&#39;weekday&#39;] == &#39;5&#39;] &lt;- &#39;Friday&#39;
-odf[&#39;weekday&#39;][odf[&#39;weekday&#39;] == &#39;6&#39;] &lt;- &#39;Saturday&#39;</code></pre>
+pizzas &lt;- read.csv(file.path(getwd(), &quot;sales-data/pizza_sales/pizzas.csv&quot;))
+odf &lt;- read.csv(file.path(getwd(), &quot;sales-data/agg_orders.csv&quot;))</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -1909,13 +1835,11 @@ odf[&#39;weekday&#39;][odf[&#39;weekday&#39;] == &#39;6&#39;] &lt;- &#39;Saturda
 <div class="footnotes footnotes-end-of-document">
 <hr />
 <ol>
-<li id="fn1"><p><a href="https://www.sqlite.org/lang_datefunc.html#strftm" class="uri">https://www.sqlite.org/lang_datefunc.html#strftm</a><a href="#fnref1" class="footnote-back">↩︎</a></p></li>
-<li id="fn2"><p><a href="https://www.sqlite.org/datatype3.html" class="uri">https://www.sqlite.org/datatype3.html</a><a href="#fnref2" class="footnote-back">↩︎</a></p></li>
-<li id="fn3"><p><a href="https://www.statology.org/replace-values-in-data-frame-r/" class="uri">https://www.statology.org/replace-values-in-data-frame-r/</a><a href="#fnref3" class="footnote-back">↩︎</a></p></li>
+<li id="fn1"><p><a href="https://mavenanalytics.io/challenges/maven-pizza-challenge/4" class="uri">https://mavenanalytics.io/challenges/maven-pizza-challenge/4</a><a href="#fnref1" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiUGxhdG8ncyBQaXp6YSIKYXV0aG9yOiAiUmVteSBEcmFpbiIKZGF0ZTogIkxhc3QgdXBkYXRlZCBgciBTeXMuRGF0ZSgpYCIKb3V0cHV0OiAKICBodG1sX25vdGVib29rOgogICAgdG9jOiB0cnVlCi0tLQoKIyMgUHJvY2VzcwojIyMgTG9hZCBQYWNrYWdlcwpgYGB7ciBpbnN0YWxsIGFuZCBsb2FkIHBhY2thZ2VzLCBlY2hvPVRSVUUsIHJlc3VsdHM9J2hpZGUnLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQpsaWJyYXJ5KHRpZHl2ZXJzZSkKbGlicmFyeShSU1FMaXRlKQpsaWJyYXJ5KGZvcmNhdHMpCmxpYnJhcnkoZ2dwbG90MikKYGBgCgojIyMgUmVhZCBpbiB0aGUgZGF0YXNldHMKYGBge3IgcmVhZCBpbiBkYXRhLCBlY2hvPVRSVUUsIHJlc3VsdHM9J2hpZGUnLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQpkaWN0IDwtIHJlYWQuY3N2KGZpbGUucGF0aChnZXR3ZCgpLCAic2FsZXMtZGF0YS9kYXRhX2RpY3Rpb25hcnkuY3N2IikpCm9yZGVyX2RldGFpbHMgPC0gcmVhZC5jc3YoZmlsZS5wYXRoKGdldHdkKCksICJzYWxlcy1kYXRhL3BpenphX3NhbGVzL29yZGVyX2RldGFpbHMuY3N2IikpCm9yZGVycyA8LSByZWFkLmNzdihmaWxlLnBhdGgoZ2V0d2QoKSwgInNhbGVzLWRhdGEvcGl6emFfc2FsZXMvb3JkZXJzLmNzdiIpKQpwaXp6YV90eXBlcyA8LSByZWFkLmNzdihmaWxlLnBhdGgoZ2V0d2QoKSwgInNhbGVzLWRhdGEvcGl6emFfc2FsZXMvcGl6emFfdHlwZXMuY3N2IikpCnBpenphcyA8LSByZWFkLmNzdihmaWxlLnBhdGgoZ2V0d2QoKSwgInNhbGVzLWRhdGEvcGl6emFfc2FsZXMvcGl6emFzLmNzdiIpKQpgYGAKCiMjIyBFeHBsb3JlIHRoZSBkYXRhCkkndmUgZ290IG15IGRhdGEgaW1wb3J0ZWQsIGluY2x1ZGluZyB0aGUgZGF0YSBkaWN0aW9uYXJ5IHRoYXQgd2FzIHByb3ZpZGVkLiBJJ2xsIHVzZSB0aWJibGVzIHRvIGdldCBhbiBpZGVhIG9mIHdoYXQgdGhlIGRhdGEgbG9va3MgbGlrZSBpbiBlYWNoIG9mIHRoZSB0YWJsZXMuCmBgYHtyfQp0aWJibGUoZGljdCkKdGliYmxlKG9yZGVyX2RldGFpbHMpCnRpYmJsZShvcmRlcnMpCnRpYmJsZShwaXp6YV90eXBlcykKdGliYmxlKHBpenphcykKYGBgCgpJIHdhbnQgdG8gYWdncmVnYXRlIHNvbWUgb2YgdGhlIGRhdGEgYW5kIGNyZWF0ZSBhdCBsZWFzdCBvbmUgbmV3IHZhcmlhYmxlIHNob3dpbmcgdGhlIGRheSBvZiB0aGUgd2Vlaywgc28gSSdtIGdvaW5nIHRvIHVzZSB0aGUgYFJTUUxpdGVgIHBhY2thZ2UgdG8gY3JlYXRlIGEgdmlydHVhbCBkYXRhYmFzZSB0aGF0IEkgY2FuIHJ1biBTUUwgcXVlcmllcyB0aHJvdWdoLCB0aGVuIHNhdmUgdGhlbSBhcyBkYXRhZnJhbWVzIGZvciBwbG90dGluZy4KCiMjIyBDcmVhdGUgYSBTUUxpdGUgRGF0YWJhc2UKYGBge3IgY3JlYXRlIGRhdGFiYXNlLCBlY2hvPVRSVUUsIHJlc3VsdHM9J2hpZGUnLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQpkYiA8LSBkYkNvbm5lY3QoUlNRTGl0ZTo6U1FMaXRlKCksIGRibmFtZT0iOm1lbW9yeToiKQoKZGJXcml0ZVRhYmxlKGRiLCAib3JkZXJfZGV0YWlscyIsIG9yZGVyX2RldGFpbHMpCmRiV3JpdGVUYWJsZShkYiwgIm9yZGVycyIsIG9yZGVycykKZGJXcml0ZVRhYmxlKGRiLCAicGl6emFfdHlwZXMiLCBwaXp6YV90eXBlcykKZGJXcml0ZVRhYmxlKGRiLCAicGl6emFzIiwgcGl6emFzKQoKZGJMaXN0VGFibGVzKGRiKQpgYGAKCkknbGwgc3RhcnQgYnkgY3JlYXRpbmcgYSBkYXRhZnJhbWUgZm9yIHRoZSBvcmRlcnMsIHdoZXJlIEkgd2FudCB0byBpbmNsdWRlIHRoZSBmb2xsb3dpbmc6CgoqIE5ldyBjb2x1bW4gZm9yIHdlZWtkYXlbXjFdCiogT3JkZXIgdG90YWwKCmBgYHtzcWwgYWRkIHdlZWtkYXlzIHZhcmlhYmxlLCBjb25uZWN0aW9uPWRiLCBvdXRwdXQudmFyPW9kZn0KU0VMRUNUCiAgb3JkZXJzLm9yZGVyX2lkLAogIHN0cmZ0aW1lKCcldycsIGp1bGlhbmRheShkYXRlKSkgQVMgd2Vla2RheSwKICBkYXRlLAogIHRpbWUsCiAgU1VNKG9yZGVyX2RldGFpbHMucXVhbnRpdHkpIEFTIHRvdGFsX2l0ZW1zLAogIFNVTShwaXp6YV9wcmljZSkgQVMgb3JkZXJfdG90YWwKRlJPTSBvcmRlcnMKSk9JTgogIChTRUxFQ1QKICAgIG9yZGVyX2RldGFpbHMub3JkZXJfaWQsCiAgICBvcmRlcl9kZXRhaWxzLnF1YW50aXR5LAogICAgcGl6emFzLnBpenphX2lkLAogICAgcGl6emFzLnByaWNlKm9yZGVyX2RldGFpbHMucXVhbnRpdHkgQVMgcGl6emFfcHJpY2UKICBGUk9NIG9yZGVyX2RldGFpbHMKICBKT0lOIHBpenphcwogICAgT04gcGl6emFzLnBpenphX2lkPW9yZGVyX2RldGFpbHMucGl6emFfaWQpIEFTIG9yZGVyX2RldGFpbHMKICBPTiBvcmRlcl9kZXRhaWxzLm9yZGVyX2lkPW9yZGVycy5vcmRlcl9pZApHUk9VUCBCWSBvcmRlcnMub3JkZXJfaWQKYGBgCgpTaW5jZSBTUUxpdGUgZG9lc24ndCBoYXZlIGEgZGF0YSB0eXBlIGZvciBkYXRlIGFuZCB0aW1lLFteMl0gSSdsbCB3YW50IHRvIGNvbnZlcnQgc29tZSBvZiB0aGUgY29sdW1ucyBpbiBvdXIgZGF0YWZyYW1lIHNvIEkgY2FuIHVzZSB0aGVtIGZvciBwbG90dGluZy4KYGBge3IgY29udmVydCBkYXRlcyBhbmQgdGltZXN9Cm9kZiRkYXRlIDwtIGFzLkRhdGUob2RmJGRhdGUsIGZvcm1hdD0iJVktJW0tJWQiKQoKc3RyKG9kZikKYGBgCgoKSSBhbHNvIHdhbnQgdG8gY2hhbmdlIHRoZSB2YWx1ZXMgaW4gdGhlIHdlZWtkYXkgY29sdW1uIHRvIHRoZSBhY3R1YWwgZGF5cyBvZiB0aGUgd2Vlaywgc28gSSdsbCB1c2UgUiB0byByZXBsYWNlIHRoZW0gd2l0aCB0aGVpciBjb3JyZXNwb25kaW5nIHZhbHVlcy5bXjNdCmBgYHtyIGNvbnZlcnQgd2Vla2RheSB2YWx1ZXN9Cm9kZlsnd2Vla2RheSddW29kZlsnd2Vla2RheSddID09ICcwJ10gPC0gJ1N1bmRheScKb2RmWyd3ZWVrZGF5J11bb2RmWyd3ZWVrZGF5J10gPT0gJzEnXSA8LSAnTW9uZGF5JwpvZGZbJ3dlZWtkYXknXVtvZGZbJ3dlZWtkYXknXSA9PSAnMiddIDwtICdUdWVzZGF5JwpvZGZbJ3dlZWtkYXknXVtvZGZbJ3dlZWtkYXknXSA9PSAnMyddIDwtICdXZWRuZXNkYXknCm9kZlsnd2Vla2RheSddW29kZlsnd2Vla2RheSddID09ICc0J10gPC0gJ1RodXJzZGF5JwpvZGZbJ3dlZWtkYXknXVtvZGZbJ3dlZWtkYXknXSA9PSAnNSddIDwtICdGcmlkYXknCm9kZlsnd2Vla2RheSddW29kZlsnd2Vla2RheSddID09ICc2J10gPC0gJ1NhdHVyZGF5JwpgYGAKCgpbXjFdOiA8aHR0cHM6Ly93d3cuc3FsaXRlLm9yZy9sYW5nX2RhdGVmdW5jLmh0bWwjc3RyZnRtPgpbXjJdOiA8aHR0cHM6Ly93d3cuc3FsaXRlLm9yZy9kYXRhdHlwZTMuaHRtbD4KW14zXTogPGh0dHBzOi8vd3d3LnN0YXRvbG9neS5vcmcvcmVwbGFjZS12YWx1ZXMtaW4tZGF0YS1mcmFtZS1yLz4=</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiUGxhdG8ncyBQaXp6YSBBbmFseXNpcyIKYXV0aG9yOiAiUmVteSBEcmFpbiIKZGF0ZTogIkxhc3QgdXBkYXRlZDogYHIgU3lzLkRhdGUoKWAiCm91dHB1dDogCiAgaHRtbF9ub3RlYm9vazoKICAgIHRvYzogdHJ1ZQotLS0KCmBgYHtyIHNldHVwLCBpbmNsdWRlPUZBTFNFfQprbml0cjo6b3B0c19jaHVuayRzZXQoZWNobyA9IFRSVUUpCmxpYnJhcnkodGlkeXZlcnNlKQpsaWJyYXJ5KGdncGxvdDIpCmBgYAojIyBJbnRyb2R1Y3Rpb24KUGxhdG8ncyBQaXp6YSBpcyBhIEdyZWVrLWluc3BpcmVkIHBpenphIHBsYWNlIGluIE5ldyBKZXJzZXkgbG9va2luZyBmb3Igd2F5cyB0byBpbXByb3ZlIG9wZXJhdGlvbnMgdXNpbmcgZGF0YSB0aGV5J3ZlIGNvbGxlY3RlZCBvdmVyIHRoZSBsYXN0IHllYXIuIFRoZXkndmUgYXNrZWQgdXMgdG8gYW5hbHl6ZSB0aGUgZGF0YSBhbmQgcHV0IHRvZ2V0aGVyIGEgcmVwb3J0IHRvIGhlbHAgdGhlbSBmaW5kIG9wcG9ydHVuaXRpZXMgdG8gZHJpdmUgbW9yZSBzYWxlcyBhbmQgd29yayBtb3JlIGVmZmljaWVudGx5LlteMV0KCiMjIFByb2JsZW1zClNvbWUgc3BlY2lmaWMgcXVlc3Rpb25zIHRoZXkndmUgYXNrZWQ6CgoqIFdoYXQgZGF5cyBhbmQgdGltZXMgZG8gd2UgdGVuZCB0byBiZSBidXNpZXN0PwoqIEhvdyBtYW55IHBpenphcyBhcmUgd2UgbWFraW5nIGR1cmluZyBwZWFrIHBlcmlvZHM/CiogV2hhdCBhcmUgb3VyIGJlc3QgYW5kIHdvcnN0IHNlbGxpbmcgcGl6emFzPwoqIFdoYXQncyBvdXIgYXZlcmFnZSBvcmRlciB2YWx1ZT8KKiBIb3cgd2VsbCBhcmUgd2UgdXNpbmcgb3VyIHNlYXRpbmcgY2FwYWNpdHk/ICh3ZSBoYXZlIDE1IHRhYmxlcyBhbmQgNjAgc2VhdHMpCgojIyBEYXRhClRoZSBkYXRhIGhhcyBiZWVuIHByb3ZpZGVkIGluIHRoZSBmb2xsb3dpbmcgNSBmaWxlczoKCiogKipEYXRhIERpY3Rpb25hcnk6KiogQ29udGFpbnMgYSBicmVha2Rvd24gb2YgdGhlIHZhcmlhYmxlcyBjb250YWluZWQgaW4gZWFjaCB0YWJsZSwgYWxvbmcgd2l0aCBhIGJyaWVmIGRlc2NyaXB0aW9uCiogKipPcmRlciBEZXRhaWxzOioqIENvbnRhaW5zIGRldGFpbHMgb2YgdGhlIG9yZGVycywgYW5kIGNvbm5lY3RzIHdpdGggdGhlIG9yZGVycyB0YWJsZSBvbiBvcmRlcl9pZCBhbmQgdGhlIHBpenphcyB0YWJsZSBvbiBwaXp6YV9pZAoqICoqT3JkZXJzOioqIENvbnRhaW5zIHRoZSBpZCwgZGF0ZSwgYW5kIHRpbWUgb2YgdGhlIG9yZGVyCiogKipQaXp6YSBUeXBlczoqKiBDb250YWlucyB0aGUgbmFtZSwgY2F0ZWdvcnksIGFuZCBpbmdyZWRpZW50cyBvZiBlYWNoIHBpenphLCBhbmQgY29ubmVjdHMgd2l0aCB0aGUgcGl6emFzIHRhYmxlIG9uIHBpenphX3R5cGVfaWQKKiAqKlBpenphczoqKiBDb250YWlucyB0aGUgaWQsIHNpemUsIGFuZCBwcmljZSBvZiB0aGUgcGl6emFzCgojIyBQcm9jZXNzCiMjIyBHZXR0aW5nIHRvIEtub3cgdGhlIERhdGEKSSBpbXBvcnRlZCB0aGUgZGF0YXNldHMgaW50byBCaWdRdWVyeSB0byBwZXJmb3JtIHNvbWUgYWdncmVnYXRpb24gYW5kIGFuYWx5c2lzIHVzaW5nIFNRTC4KCiMjIyBSZWFkIGluIGRhdGFzZXRzCmBgYHtyIHJlYWQgaW4gZGF0YSwgZWNobz1UUlVFLCByZXN1bHRzPSdoaWRlJywgbWVzc2FnZT1GQUxTRSwgd2FybmluZz1GQUxTRX0KZGljdCA8LSByZWFkLmNzdihmaWxlLnBhdGgoZ2V0d2QoKSwgInNhbGVzLWRhdGEvZGF0YV9kaWN0aW9uYXJ5LmNzdiIpKQpvcmRlcl9kZXRhaWxzIDwtIHJlYWQuY3N2KGZpbGUucGF0aChnZXR3ZCgpLCAic2FsZXMtZGF0YS9waXp6YV9zYWxlcy9vcmRlcl9kZXRhaWxzLmNzdiIpKQpvcmRlcnMgPC0gcmVhZC5jc3YoZmlsZS5wYXRoKGdldHdkKCksICJzYWxlcy1kYXRhL3BpenphX3NhbGVzL29yZGVycy5jc3YiKSkKcGl6emFfdHlwZXMgPC0gcmVhZC5jc3YoZmlsZS5wYXRoKGdldHdkKCksICJzYWxlcy1kYXRhL3BpenphX3NhbGVzL3BpenphX3R5cGVzLmNzdiIpKQpwaXp6YXMgPC0gcmVhZC5jc3YoZmlsZS5wYXRoKGdldHdkKCksICJzYWxlcy1kYXRhL3BpenphX3NhbGVzL3Bpenphcy5jc3YiKSkKb2RmIDwtIHJlYWQuY3N2KGZpbGUucGF0aChnZXR3ZCgpLCAic2FsZXMtZGF0YS9hZ2dfb3JkZXJzLmNzdiIpKQpgYGAKCgpbXjFdOiA8aHR0cHM6Ly9tYXZlbmFuYWx5dGljcy5pby9jaGFsbGVuZ2VzL21hdmVuLXBpenphLWNoYWxsZW5nZS80Pg==</div>
 
 
 
@@ -1962,7 +1886,7 @@ $(document).ready(function () {
 <!-- code folding -->
 <script>
 $(document).ready(function () {
-  window.initializeSourceEmbed("analysis.Rmd");
+  window.initializeSourceEmbed("platos-pizza-analysis.Rmd");
   window.initializeCodeFolding("show" === "show");
 });
 </script>

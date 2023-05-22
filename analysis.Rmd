@@ -5,9 +5,6 @@ date: "Last updated `r Sys.Date()`"
 output: 
   html_notebook:
     toc: true
-bibliography: sources.bib
-csl: chicago-fullnote-bibliography.csl
-suppress-bibliography: true
 ---
 
 ## Process
@@ -80,6 +77,12 @@ GROUP BY orders.order_id
 ```
 
 Since SQLite doesn't have a data type for date and time,[^2] I'll want to convert some of the columns in our dataframe so I can use them for plotting.
+```{r convert dates and times}
+odf$date <- as.Date(odf$date, format="%Y-%m-%d")
+
+str(odf)
+```
+
 
 I also want to change the values in the weekday column to the actual days of the week, so I'll use R to replace them with their corresponding values.[^3]
 ```{r convert weekday values}
@@ -90,11 +93,6 @@ odf['weekday'][odf['weekday'] == '3'] <- 'Wednesday'
 odf['weekday'][odf['weekday'] == '4'] <- 'Thursday'
 odf['weekday'][odf['weekday'] == '5'] <- 'Friday'
 odf['weekday'][odf['weekday'] == '6'] <- 'Saturday'
-```
-
-Et, voilá! I've got my first plottable dataframe. Let's take it for a spin with `ggplot2`.
-```{r plotting orders}
-
 ```
 
 

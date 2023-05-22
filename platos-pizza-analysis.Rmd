@@ -1,0 +1,51 @@
+---
+title: "Plato's Pizza Analysis"
+author: "Remy Drain"
+date: "Last updated: `r Sys.Date()`"
+output: 
+  html_notebook:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+```
+## Introduction
+Plato's Pizza is a Greek-inspired pizza place in New Jersey looking for ways to improve operations using data they've collected over the last year. They've asked us to analyze the data and put together a report to help them find opportunities to drive more sales and work more efficiently.[^1]
+
+## Problems
+Some specific questions they've asked:
+
+* What days and times do we tend to be busiest?
+* How many pizzas are we making during peak periods?
+* What are our best and worst selling pizzas?
+* What's our average order value?
+* How well are we using our seating capacity? (we have 15 tables and 60 seats)
+
+## Data
+The data has been provided in the following 5 files:
+
+* **Data Dictionary:** Contains a breakdown of the variables contained in each table, along with a brief description
+* **Order Details:** Contains details of the orders, and connects with the orders table on order_id and the pizzas table on pizza_id
+* **Orders:** Contains the id, date, and time of the order
+* **Pizza Types:** Contains the name, category, and ingredients of each pizza, and connects with the pizzas table on pizza_type_id
+* **Pizzas:** Contains the id, size, and price of the pizzas
+
+## Process
+### Getting to Know the Data
+I imported the datasets into BigQuery to perform some aggregation and analysis using SQL.
+
+### Read in datasets
+```{r read in data, echo=TRUE, results='hide', message=FALSE, warning=FALSE}
+dict <- read.csv(file.path(getwd(), "sales-data/data_dictionary.csv"))
+order_details <- read.csv(file.path(getwd(), "sales-data/pizza_sales/order_details.csv"))
+orders <- read.csv(file.path(getwd(), "sales-data/pizza_sales/orders.csv"))
+pizza_types <- read.csv(file.path(getwd(), "sales-data/pizza_sales/pizza_types.csv"))
+pizzas <- read.csv(file.path(getwd(), "sales-data/pizza_sales/pizzas.csv"))
+odf <- read.csv(file.path(getwd(), "sales-data/agg_orders.csv"))
+```
+
+
+[^1]: <https://mavenanalytics.io/challenges/maven-pizza-challenge/4>
